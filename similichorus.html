@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Déposer facture – Chorus Pro</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; color: #1a1a2e; font-size: 13px; }
+
+/* NAV */
+.nav { background: #1a2d50; display: flex; align-items: stretch; height: 42px; }
+.nav a { color: #cfd8e8; text-decoration: none; font-size: 12.5px; padding: 0 18px; display: flex; align-items: center; border-right: 1px solid #2e4370; white-space: nowrap; transition: background .15s; }
+.nav a:hover { background: #243660; color: #fff; }
+.nav a.active { background: #1253a4; color: #fff; font-weight: 600; }
+
+/* BUTTONS */
+.btn { padding: 7px 20px; border-radius: 3px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1px solid #1253a4; transition: background .15s; }
+.btn-outline { background: #fff; color: #1253a4; }
+.btn-outline:hover { background: #eef2fa; }
+.btn-primary { background: #1253a4; color: #fff; border-color: #1253a4; }
+.btn-primary:hover { background: #0a3a7a; }
+.btn-green { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+.btn-green:hover { background: #1b5e20; }
+.btn-sm { padding: 5px 12px; font-size: 11.5px; font-weight: 600; border: 1px solid #1253a4; background: #fff; color: #1253a4; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+.btn-sm:hover { background: #eef2fa; }
+
+/* TOP ACTIONS */
+.top-actions { display: flex; justify-content: center; gap: 12px; padding: 12px 24px; background: #f0f2f5; }
+
+/* NOTE */
+.note-req { font-size: 11.5px; color: #555; padding: 0 24px 10px; }
+.note-req em { color: #c0392b; font-style: normal; }
+
+/* CARD */
+.card { background: #fff; border: 1px solid #d0d5e0; border-radius: 3px; padding: 18px 20px 20px; }
+.card-title { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #1253a4; margin-bottom: 16px; font-variant: small-caps; }
+
+/* FIELD */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field-label { display: block; font-size: 11.5px; color: #555; margin-bottom: 4px; }
+.req { color: #c0392b; }
+
+/* INPUTS */
+.input-line { width: 100%; border: none; border-bottom: 2px solid #1253a4; background: transparent; font-size: 13px; padding: 5px 0; color: #1a1a2e; outline: none; }
+.input-line::placeholder { color: #aaa; }
+.input-line.filled { background: #e8f0fe; border-bottom-color: #1253a4; padding: 5px 8px; border-radius: 2px 2px 0 0; }
+.input-btn-row { display: flex; gap: 8px; align-items: flex-end; }
+.input-btn-row .input-line { flex: 1; }
+
+/* SELECTS */
+.sel-wrap { position: relative; }
+.sel-wrap select { appearance: none; -webkit-appearance: none; width: 100%; border: none; border-bottom: 2px solid #1253a4; background: transparent; font-size: 13px; padding: 5px 24px 5px 0; color: #1a1a2e; outline: none; cursor: pointer; }
+.sel-wrap .chev { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); color: #1253a4; pointer-events: none; font-size: 16px; }
+.sel-wrap.disabled select { border-bottom-color: #aaa; color: #555; pointer-events: none; }
+.sel-wrap.disabled .chev { color: #aaa; }
+
+/* RADIO */
+.radio-row { display: flex; align-items: center; gap: 18px; margin-top: 4px; }
+.radio-row label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12.5px; }
+.radio-row input[type=radio] { accent-color: #1253a4; width: 14px; height: 14px; }
+
+/* FILE */
+.file-row { display: flex; align-items: center; border-bottom: 2px solid #1253a4; max-width: 420px; }
+.file-row .file-name { flex: 1; font-size: 13px; padding: 5px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-row .file-icon { background: none; border: none; cursor: pointer; color: #1253a4; padding: 3px 5px; }
+
+/* HIDDEN */
+.hidden { display: none !important; }
+
+/* PAGE 1 */
+#page1 .p1-wrap { max-width: 780px; margin: 0 auto; padding: 0 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+#page1 .p1-wrap .sel-wrap { max-width: 420px; }
+#page1 .p1-wrap .file-row { max-width: 420px; }
+
+/* PAGE 2 LAYOUT */
+.form-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 24px 24px; }
+.col-left, .col-right { display: flex; flex-direction: column; gap: 14px; }
+
+/* PDF PREVIEW */
+.pdf-preview { background: #fff; border: 1px solid #d0d5e0; border-radius: 3px; overflow: hidden; }
+.pdf-toolbar { background: #3c3c3c; display: flex; align-items: center; gap: 6px; padding: 6px 10px; color: #ddd; font-size: 12px; flex-wrap: wrap; }
+.pdf-toolbar span.page-num { font-weight: 600; }
+.pdf-toolbar button { background: none; border: none; color: #ccc; cursor: pointer; font-size: 15px; padding: 2px 4px; }
+.pdf-toolbar button:hover { color: #fff; }
+.pdf-toolbar .tsep { width: 1px; height: 16px; background: #666; margin: 0 2px; display: inline-block; }
+.pdf-body { background: #525659; display: flex; justify-content: center; align-items: flex-start; padding: 14px 8px; min-height: 230px; gap: 10px; }
+.pdf-page { background: #fff; width: 200px; min-height: 280px; box-shadow: 0 2px 12px rgba(0,0,0,.4); padding: 10px; overflow: hidden; flex-shrink: 0; }
+.pdf-logo { font-size: 14px; font-weight: 900; color: #00b0b9; }
+.pdf-row { display: flex; justify-content: space-between; font-size: 6px; color: #555; border-bottom: 1px solid #eee; padding: 2px 0; }
+.pdf-scroll-body { overflow-y: auto; max-height: 230px; }
+
+/* PIÈCES JOINTES */
+.pj-controls { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 11.5px; color: #555; }
+.pj-controls select { font-size: 11.5px; border: 1px solid #ccc; padding: 2px 4px; border-radius: 2px; }
+.pj-pag { display: flex; align-items: center; gap: 4px; }
+.pj-pag button { background: #fff; border: 1px solid #ccc; border-radius: 2px; padding: 1px 6px; cursor: pointer; font-size: 11px; }
+.pj-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pj-table th { background: #eef2fa; color: #1253a4; font-weight: 700; padding: 6px 8px; text-align: left; border-bottom: 2px solid #c5d3ec; font-size: 11.5px; }
+.pj-table td { padding: 6px 8px; border-bottom: 1px solid #e8eaf0; vertical-align: middle; }
+.pj-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.btn-pj { padding: 5px 12px; font-size: 11.5px; background: #fff; border: 1px solid #1253a4; color: #1253a4; border-radius: 3px; cursor: pointer; }
+.btn-pj:hover { background: #eef2fa; }
+
+/* sub-section label */
+.sub-label { font-size: 12px; font-weight: 700; color: #333; margin: 8px 0 4px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#">Synthèse</a>
+  <a href="#">Rechercher</a>
+  <a href="#">Tableau de bord</a>
+  <a href="#">Saisir facture</a>
+  <a href="#" class="active">Déposer facture</a>
+  <a href="#">Liste fiscale</a>
+  <a href="#">Archives</a>
+</nav>
+
+<!-- ═══════════ PAGE 1 ═══════════ -->
+<div id="page1">
+  <div style="height:14px;"></div>
+  <div class="p1-wrap" style="max-width:780px;margin:0 auto;padding:0 24px 24px;display:flex;flex-direction:column;gap:14px;">
+    <p class="note-req" style="padding:0;"><em>*</em> Les champs précédés d&apos;un astérisque sont obligatoires</p>
+
+    <div class="card">
+      <div class="card-title">Dépôt d&apos;une nouvelle facture</div>
+      <div class="field">
+        <label class="field-label"><span class="req">*</span> Choix du fichier à importer</label>
+        <div class="file-row">
+          <span class="file-name" id="fn">Invoice_202512011318251825.pdf</span>
+          <button class="file-icon" onclick="document.getElementById('fi').click()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+        <input type="file" id="fi" accept=".pdf" style="display:none" onchange="document.getElementById('fn').textContent=this.files[0]?.name||document.getElementById('fn').textContent">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Format de dépôt</div>
+      <div class="field">
+        <label class="field-label"><span class="req">*</span> Format de dépôt :</label>
+        <div class="sel-wrap disabled" style="max-width:420px;">
+          <select disabled><option>Unsigned PDF</option></select>
+          <span class="chev">&#8964;</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Informations complémentaires</div>
+      <div class="field">
+        <label class="field-label"><span class="req">*</span> Cadre de facturation :</label>
+        <div class="sel-wrap" style="max-width:420px;">
+          <select id="cadre1">
+            <option value="" disabled selected></option>
+            <option>A1 – Facture simple</option>
+            <option>A3 – Facture dans le cadre d&apos;un marché public</option>
+            <option selected>A9 – Déposer une facture par un sous-traitant</option>
+            <option>A12 – Facture dans le cadre d&apos;un accord-cadre</option>
+          </select>
+          <span class="chev">&#8964;</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="go2()">Continuer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE 2 ═══════════ -->
+<div id="page2" class="hidden">
+
+  <div class="top-actions">
+    <button class="btn btn-outline">Annuler</button>
+    <button class="btn btn-outline">Enregistrer en mode Brouillon</button>
+    <button class="btn btn-green">Valider et envoyer</button>
+  </div>
+  <p class="note-req"><em>*</em> Les champs précédés d&apos;un astérisque sont obligatoires</p>
+
+  <div class="form-layout">
+
+    <!-- ── GAUCHE ── -->
+    <div class="col-left">
+
+      <div class="card">
+        <div class="card-title">Fournisseur de la facture</div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Désignation :</label>
+          <div class="sel-wrap">
+            <select><option>75332149600014 - MONSIEUR JEAN FRANCOIS VINOT</option></select>
+            <span class="chev">&#8964;</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Service :</label>
+          <div class="sel-wrap"><select><option value=""></option></select><span class="chev">&#8964;</span></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Références bancaires :</label>
+          <div class="sel-wrap"><select><option value=""></option></select><span class="chev">&#8964;</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cadre de facturation</div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Cadre de facturation :</label>
+          <div class="sel-wrap">
+            <select><option>A9: Dépôt d&apos;une facture par un sous-traitant</option></select>
+            <span class="chev">&#8964;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF viewer -->
+      <div class="pdf-preview">
+        <div class="pdf-toolbar">
+          <span class="page-num">3</span><span>/</span><span>4</span>
+          <span class="tsep"></span>
+          <button>−</button><button>+</button>
+          <span class="tsep"></span>
+          <button title="Rotation">↺</button>
+          <span class="tsep"></span>
+          <button title="Annuler">↩</button><button title="Rétablir">↪</button>
+          <span class="tsep"></span>
+          <button title="Annoter">&#9998;</button>
+          <button title="Télécharger">&#8681;</button>
+          <button title="Imprimer">&#9113;</button>
+        </div>
+        <div class="pdf-body">
+          <div class="pdf-page">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+              <div style="font-size:7px;color:#444;line-height:1.5;">Philippe Jean Vinot<br>Route Jean Combot<br>Rue Renoux 14<br>123 Suisse</div>
+              <div class="pdf-logo">yallo</div>
+            </div>
+            <div style="font-size:8px;font-weight:700;margin-bottom:6px;color:#222;">Preuve détaillée des connexions</div>
+            <div class="pdf-scroll-body" id="pdfContent"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pièces jointes -->
+      <div class="card">
+        <div class="card-title">Pièces jointes</div>
+        <div class="pj-controls">
+          <span>Ligne(s) par page</span>
+          <select><option>5</option><option>10</option></select>
+          <span>Pagination</span>
+          <div class="pj-pag">
+            <button>&#8249;</button>
+            <span>0 sur 0</span>
+            <button>&#8250;</button>
+          </div>
+        </div>
+        <table class="pj-table">
+          <thead><tr>
+            <th>Type</th>
+            <th>Désignation <small>↕</small></th>
+            <th>Nom du fichier <small>↕</small></th>
+            <th>Actions</th>
+            <th><input type="checkbox"></th>
+          </tr></thead>
+          <tbody><tr>
+            <td>Facture PDF</td>
+            <td style="font-size:11px;color:#555;">Invoice_202512011318...</td>
+            <td style="font-size:11px;color:#555;">Invoice_202512011318...</td>
+            <td>
+              <button style="background:none;border:none;cursor:pointer;color:#1253a4;font-size:14px;" title="Modifier">&#9998;</button>
+              <button style="background:none;border:none;cursor:pointer;color:#1253a4;font-size:14px;" title="Télécharger">&#8681;</button>
+            </td>
+            <td><input type="checkbox"></td>
+          </tr></tbody>
+        </table>
+        <div class="pj-actions">
+          <button class="btn-pj">Télécharger pièces jointes</button>
+          <button class="btn-pj">Supprimer pièces jointes</button>
+          <button class="btn-pj" style="background:#1253a4;color:#fff;">Ajouter une pièce jointe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DROITE ── -->
+    <div class="col-right">
+
+      <div class="card">
+        <div class="card-title">Destinataire de la facture</div>
+        <div class="field">
+          <span class="field-label">Le destinataire est-il l&apos;État ?</span>
+          <div class="radio-row">
+            <label><input type="radio" name="etat" value="oui"> Oui</label>
+            <label><input type="radio" name="etat" value="non" checked> Non</label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> SIRET :</label>
+          <div class="input-btn-row">
+            <input class="input-line" placeholder="Rechercher une structure">
+            <button class="btn-sm">Recherche avancée</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Raison sociale :</label>
+          <input class="input-line" placeholder="Raison sociale">
+        </div>
+        <div class="field">
+          <label class="field-label">Code service</label>
+          <div class="input-btn-row">
+            <input class="input-line" placeholder="Rechercher un service">
+            <button class="btn-sm">Recherche avancée</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Libellé service :</label>
+          <input class="input-line" placeholder="Libellé service">
+        </div>
+        <p class="sub-label">Titulaire :</p>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> SIRET :</label>
+          <div class="input-btn-row">
+            <input class="input-line" placeholder="Rechercher une structure">
+            <button class="btn-sm">Recherche avancée</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Raison sociale :</label>
+          <input class="input-line" placeholder="Raison sociale">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Références</div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Numéro de facture &#9432;</label>
+          <input class="input-line filled" id="numFact" value="2005006625">
+        </div>
+        <div class="field">
+          <label class="field-label">Date de facture :</label>
+          <div style="position:relative;">
+            <input class="input-line filled" value="01/01/2026" style="padding-right:28px;">
+            <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);color:#1253a4;font-size:13px;pointer-events:none;">&#128197;</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Format de dépôt :</label>
+          <input class="input-line filled" value="DEPOT_PDF_PORTAIL" readonly>
+        </div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Devise</label>
+          <div class="sel-wrap">
+            <select><option>EUR – Euro européen</option></select>
+            <span class="chev">&#8964;</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Type</label>
+          <div class="radio-row">
+            <label><input type="radio" name="type" value="f" checked> Facture</label>
+            <label><input type="radio" name="type" value="a"> Avoir</label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Numéro de la facture d&apos;origine : &#9432;</label>
+          <input class="input-line" placeholder="Numéro de la facture d&apos;origine">
+        </div>
+        <div class="field">
+          <label class="field-label">N° d&apos;engagement : &#9432;</label>
+          <div class="input-btn-row">
+            <input class="input-line" placeholder="N° d&apos;engagement">
+            <button class="btn-sm">Rechercher</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Numéro du marché :</label>
+          <input class="input-line" placeholder="Numéro du marché">
+        </div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Type de TVA :</label>
+          <div class="sel-wrap">
+            <select><option>TVA sur les encaissements</option></select>
+            <span class="chev">&#8964;</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Mode de règlement</label>
+          <div class="sel-wrap">
+            <select><option>Virement</option></select>
+            <span class="chev">&#8964;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Montants totaux</div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Montant HT :</label>
+          <input class="input-line" id="mHT" placeholder="Montant HT" oninput="calcTTC()">
+        </div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Montant TVA :</label>
+          <input class="input-line" id="mTVA" placeholder="Montant TVA" oninput="calcTTC()">
+        </div>
+        <div class="field">
+          <label class="field-label">Montant TTC :</label>
+          <input class="input-line filled" id="mTTC" value="0,00" readonly>
+        </div>
+        <div class="field">
+          <label class="field-label"><span class="req">*</span> Net à payer :</label>
+          <input class="input-line" placeholder="Net à payer">
+        </div>
+        <div class="field" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;">
+          <span style="font-size:12px;color:#555;">Saisir le détail de la TVA<br><span style="font-size:11px;">(Facultatif)</span></span>
+          <button class="btn-sm">Détail TVA</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="top-actions" style="border-top:1px solid #dde0e8;">
+    <button class="btn btn-outline">Annuler</button>
+    <button class="btn btn-outline">Enregistrer en mode Brouillon</button>
+    <button class="btn btn-green">Valider et envoyer</button>
+  </div>
+</div>
+
+<script>
+// PDF fake rows
+(function(){
+  const rows=[['12/01','0049','08min 30s','2,40 CHF'],['12/01','0033','03min 12s','0,90 CHF'],['13/01','0049','12min 06s','3,20 CHF'],['13/01','0049','06min 00s','1,80 CHF'],['14/01','0033','04min 30s','1,30 CHF'],['14/01','0049','09min 12s','2,60 CHF'],['15/01','0049','07min 48s','2,10 CHF'],['15/01','0033','02min 06s','0,60 CHF'],['16/01','0049','15min 18s','4,30 CHF'],['16/01','0049','05min 30s','1,50 CHF']];
+  const c=document.getElementById('pdfContent');
+  rows.forEach(r=>{
+    const d=document.createElement('div');
+    d.className='pdf-row';
+    d.innerHTML=r.map(x=>`<span>${x}</span>`).join('');
+    c.appendChild(d);
+  });
+})();
+
+function go2(){
+  document.getElementById('page1').classList.add('hidden');
+  document.getElementById('page2').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function calcTTC(){
+  const ht=parseFloat(document.getElementById('mHT').value.replace(',','.'))||0;
+  const tva=parseFloat(document.getElementById('mTVA').value.replace(',','.'))||0;
+  document.getElementById('mTTC').value=(ht+tva).toFixed(2).replace('.',',');
+}
+</script>
+</body>
+</html>
