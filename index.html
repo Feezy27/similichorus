@@ -130,12 +130,12 @@ body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; co
       <div class="field">
         <label class="field-label"><span class="req">*</span> Choix du fichier à importer</label>
         <div class="file-row">
-          <span class="file-name" id="fn">Invoice_202512011318251825.pdf</span>
-          <button class="file-icon" onclick="document.getElementById('fi').click()">
+          <span class="file-name" id="fn" style="color:#aaa;font-style:italic;">Aucun fichier sélectionné</span>
+          <button class="file-icon" onclick="document.getElementById('fi').click()" title="Choisir un fichier PDF">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
         </div>
-        <input type="file" id="fi" accept=".pdf" style="display:none" onchange="document.getElementById('fn').textContent=this.files[0]?.name||document.getElementById('fn').textContent">
+        <input type="file" id="fi" accept=".pdf" style="display:none" onchange="handleFileSelect(this)">
       </div>
     </div>
 
@@ -155,12 +155,12 @@ body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; co
       <div class="field">
         <label class="field-label"><span class="req">*</span> Cadre de facturation :</label>
         <div class="sel-wrap" style="max-width:420px;">
-          <select id="cadre1">
+          <select id="cadre1" onchange="updateCadreDisplay(this)">
             <option value="" disabled selected></option>
-            <option>A1 – Facture simple</option>
-            <option>A3 – Facture dans le cadre d&apos;un marché public</option>
-            <option selected>A9 – Déposer une facture par un sous-traitant</option>
-            <option>A12 – Facture dans le cadre d&apos;un accord-cadre</option>
+            <option value="A1">A1 – Facture simple</option>
+            <option value="A3">A3 – Facture dans le cadre d&apos;un marché public</option>
+            <option value="A9">A9 – Déposer une facture par un sous-traitant</option>
+            <option value="A12">A12 – Facture dans le cadre d&apos;un accord-cadre</option>
           </select>
           <span class="chev">&#8964;</span>
         </div>
@@ -177,7 +177,7 @@ body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; co
 <div id="page2" class="hidden">
 
   <div class="top-actions">
-    <button class="btn btn-outline">Annuler</button>
+    <button class="btn btn-outline" onclick="go1()">Annuler</button>
     <button class="btn btn-outline">Enregistrer en mode Brouillon</button>
     <button class="btn btn-green">Valider et envoyer</button>
   </div>
@@ -220,29 +220,18 @@ body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; co
 
       <!-- PDF viewer -->
       <div class="pdf-preview">
-        <div class="pdf-toolbar">
-          <span class="page-num">3</span><span>/</span><span>4</span>
-          <span class="tsep"></span>
-          <button>−</button><button>+</button>
-          <span class="tsep"></span>
-          <button title="Rotation">↺</button>
-          <span class="tsep"></span>
-          <button title="Annuler">↩</button><button title="Rétablir">↪</button>
-          <span class="tsep"></span>
-          <button title="Annoter">&#9998;</button>
-          <button title="Télécharger">&#8681;</button>
-          <button title="Imprimer">&#9113;</button>
-        </div>
-        <div class="pdf-body">
-          <div class="pdf-page">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-              <div style="font-size:7px;color:#444;line-height:1.5;">Philippe Jean Vinot<br>Route Jean Combot<br>Rue Renoux 14<br>123 Suisse</div>
-              <div class="pdf-logo">yallo</div>
-            </div>
-            <div style="font-size:8px;font-weight:700;margin-bottom:6px;color:#222;">Preuve détaillée des connexions</div>
-            <div class="pdf-scroll-body" id="pdfContent"></div>
+        <div class="pdf-toolbar" style="justify-content:space-between;">
+          <span id="pdfFileName" style="font-size:11.5px;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;">Aucun fichier</span>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button title="Télécharger" id="btnDl" onclick="downloadPdf()" style="display:none;">&#8681;</button>
+            <button title="Imprimer" id="btnPrint" onclick="printPdf()" style="display:none;">&#9113;</button>
           </div>
         </div>
+        <div id="pdfPlaceholder" style="background:#525659;display:flex;align-items:center;justify-content:center;min-height:320px;color:#aaa;font-size:13px;flex-direction:column;gap:10px;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Aucun fichier déposé</span>
+        </div>
+        <iframe id="pdfViewer" style="display:none;width:100%;height:420px;border:none;" title="Aperçu PDF"></iframe>
       </div>
 
       <!-- Pièces jointes -->
@@ -266,15 +255,8 @@ body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; co
             <th>Actions</th>
             <th><input type="checkbox"></th>
           </tr></thead>
-          <tbody><tr>
-            <td>Facture PDF</td>
-            <td style="font-size:11px;color:#555;">Invoice_202512011318...</td>
-            <td style="font-size:11px;color:#555;">Invoice_202512011318...</td>
-            <td>
-              <button style="background:none;border:none;cursor:pointer;color:#1253a4;font-size:14px;" title="Modifier">&#9998;</button>
-              <button style="background:none;border:none;cursor:pointer;color:#1253a4;font-size:14px;" title="Télécharger">&#8681;</button>
-            </td>
-            <td><input type="checkbox"></td>
+          <tbody id="pjTbody"><tr id="pjEmptyRow">
+            <td colspan="5" style="text-align:center;color:#aaa;font-size:12px;padding:12px;">Aucun fichier déposé</td>
           </tr></tbody>
         </table>
         <div class="pj-actions">
@@ -423,30 +405,101 @@ body { font-family: Arial, 'Helvetica Neue', sans-serif; background: #f0f2f5; co
   </div>
 
   <div class="top-actions" style="border-top:1px solid #dde0e8;">
-    <button class="btn btn-outline">Annuler</button>
+    <button class="btn btn-outline" onclick="go1()">Annuler</button>
     <button class="btn btn-outline">Enregistrer en mode Brouillon</button>
     <button class="btn btn-green">Valider et envoyer</button>
   </div>
 </div>
 
 <script>
-// PDF fake rows
-(function(){
-  const rows=[['12/01','0049','08min 30s','2,40 CHF'],['12/01','0033','03min 12s','0,90 CHF'],['13/01','0049','12min 06s','3,20 CHF'],['13/01','0049','06min 00s','1,80 CHF'],['14/01','0033','04min 30s','1,30 CHF'],['14/01','0049','09min 12s','2,60 CHF'],['15/01','0049','07min 48s','2,10 CHF'],['15/01','0033','02min 06s','0,60 CHF'],['16/01','0049','15min 18s','4,30 CHF'],['16/01','0049','05min 30s','1,50 CHF']];
-  const c=document.getElementById('pdfContent');
-  rows.forEach(r=>{
-    const d=document.createElement('div');
-    d.className='pdf-row';
-    d.innerHTML=r.map(x=>`<span>${x}</span>`).join('');
-    c.appendChild(d);
-  });
-})();
+let uploadedFile = null;
+let objectUrl = null;
+
+function handleFileSelect(input){
+  const fn = document.getElementById('fn');
+  if(input.files && input.files[0]){
+    uploadedFile = input.files[0];
+    fn.textContent = uploadedFile.name;
+    fn.style.color = '#1a1a2e';
+    fn.style.fontStyle = 'normal';
+    // Revoke previous object URL if any
+    if(objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(uploadedFile);
+  }
+}
 
 function go2(){
   document.getElementById('page1').classList.add('hidden');
   document.getElementById('page2').classList.remove('hidden');
   window.scrollTo(0,0);
+  loadPdfPreview();
+  updatePjTable();
 }
+
+function go1(){
+  document.getElementById('page2').classList.add('hidden');
+  document.getElementById('page1').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function loadPdfPreview(){
+  const viewer = document.getElementById('pdfViewer');
+  const placeholder = document.getElementById('pdfPlaceholder');
+  const nameEl = document.getElementById('pdfFileName');
+  const btnDl = document.getElementById('btnDl');
+  const btnPrint = document.getElementById('btnPrint');
+
+  if(objectUrl && uploadedFile){
+    nameEl.textContent = uploadedFile.name;
+    viewer.src = objectUrl;
+    viewer.style.display = 'block';
+    placeholder.style.display = 'none';
+    btnDl.style.display = 'inline-block';
+    btnPrint.style.display = 'inline-block';
+  } else {
+    nameEl.textContent = 'Aucun fichier';
+    viewer.style.display = 'none';
+    placeholder.style.display = 'flex';
+    btnDl.style.display = 'none';
+    btnPrint.style.display = 'none';
+  }
+}
+
+function updatePjTable(){
+  const tbody = document.getElementById('pjTbody');
+  if(!uploadedFile){
+    tbody.innerHTML = '<tr id="pjEmptyRow"><td colspan="5" style="text-align:center;color:#aaa;font-size:12px;padding:12px;">Aucun fichier déposé</td></tr>';
+    return;
+  }
+  const shortName = uploadedFile.name.length > 22 ? uploadedFile.name.substring(0,22)+'...' : uploadedFile.name;
+  tbody.innerHTML = `<tr>
+    <td>Facture PDF</td>
+    <td style="font-size:11px;color:#555;">${shortName}</td>
+    <td style="font-size:11px;color:#555;">${shortName}</td>
+    <td>
+      <button style="background:none;border:none;cursor:pointer;color:#1253a4;font-size:14px;" title="Modifier">&#9998;</button>
+      <button style="background:none;border:none;cursor:pointer;color:#1253a4;font-size:14px;" title="Télécharger" onclick="downloadPdf()">&#8681;</button>
+    </td>
+    <td><input type="checkbox"></td>
+  </tr>`;
+}
+
+function downloadPdf(){
+  if(!objectUrl || !uploadedFile) return;
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = uploadedFile.name;
+  a.click();
+}
+
+function printPdf(){
+  const viewer = document.getElementById('pdfViewer');
+  if(viewer && viewer.style.display !== 'none'){
+    viewer.contentWindow.print();
+  }
+}
+
+function updateCadreDisplay(sel){}
 
 function calcTTC(){
   const ht=parseFloat(document.getElementById('mHT').value.replace(',','.'))||0;
